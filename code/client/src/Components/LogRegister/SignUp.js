@@ -1,62 +1,77 @@
-import {Container,Card,Form,Button,InputGroup,ToggleButton,ButtonGroup,} from "react-bootstrap";
-import { FaFacebook, FaGoogle } from "react-icons/fa";
+import {
+  Card,
+  Form,
+  Button,
+  InputGroup,
+  ToggleButton,
+  ButtonGroup,
+} from "react-bootstrap";
 import { useEffect, useState } from "react";
-import { setLogin} from "../../Contexts/loginRedux/action";
+import { LOGIN, setLogin } from "../../Contexts/action";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
-import {emailAuth,passwordAuth,confirmPasswordAuth,userNameAuth} from "../../Contexts/Auth/Auth";
-import CryptoJS from "crypto-js";
-import {Envelope,Lock,EyeFill,EyeSlashFill,Person} from "react-bootstrap-icons";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  emailAuth,
+  passwordAuth,
+  confirmPasswordAuth,
+  userNameAuth,
+} from "../../Authentication/Auth";
+import {
+  Envelope,
+  Lock,
+  EyeFill,
+  EyeSlashFill,
+  Person,
+} from "react-bootstrap-icons";
+import '../../boxicons-2.1.4/css/boxicons.min.css';
+import { useSignUp } from "../../Hooks/useSignUp";
+import jwt_decode from 'jwt-decode';
+import axios from "axios";
 
 const SignUp = () => {
+  useEffect(()=>{
+    /* global google */
+    google.accounts.id.initialize(
+      {
+        client_id: "430247778721-b4hss8mpbk8qhtfkr4v7h1d2gt32me82.apps.googleusercontent.com",
+        callback: handleCallBackResponse
+      }
+    );
+    google.accounts.id.renderButton(
+      document.getElementById('googleSignIn'),
+      {theme:'outline', size:'large'}
+    )
+  },[]);
+
   const dispatch = useDispatch();
   const [radioValue, setRadioValue] = useState(1);
+  const navigate=useNavigate();
   const [radioName, setRadioName] = useState("Buyer");
-  const radios = [{ name: "Buyer", value: 1 },{ name: "Seller", value: 2 },];
-  const [isLocked, setisLocked] = useState(true);
-  const [isGlobalLocked,setisGlobalLocked] = useState(false);
+  const radios = [
+    { name: "Buyer", value: 1 },
+    { name: "Seller", value: 2 },
+  ];
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState(false);
-  const [error, setError] = useState(null);
   const [errorEmail, setErrorEmail] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
   const [errorConfirmPassword, setErrorCPassword] = useState("");
-  const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(false);
-  useEffect(() => {
-    if (password !== "" && confirmPassword !== "" && username !== "" && email !== "" && errorEmail === "" && errorPassword === "" && errorConfirmPassword === "") {
-      setisLocked(false);
-    } else {
-      setisLocked(true);
-    }
-  }, [
-    password,username,email,confirmPassword,errorEmail,errorPassword,errorConfirmPassword]);
-    useEffect(() => {
-      const fetchUsers = async () => {
-        const seller_response = await fetch("api/seller/signup/email/" + email);
-        if (seller_response.ok) {
-          setErrorEmail("account already exists with email");
-        }
-        const buyer_response = await fetch("api/buyer/signup/email/" + email);
-        if (buyer_response.ok) {
-          setErrorEmail("account already exists with email");
-        }
-      };
-      if (!errorEmail && email!=="")fetchUsers();
-    }, [email, errorEmail]);
+  const [confirmPasswordVisibility, setConfirmPasswordVisibility] =useState(false);
+  const {signup,error,isLoading}= useSignUp();
 
-    const emailChange = (event) => {
-      const result=emailAuth(event.target.value);
-      setEmail(result.email);
-      if(result.error)setErrorEmail("Not valid email");
-      else setErrorEmail("");
-    };
+  const emailChange = (event) => {
+    const result = emailAuth(event.target.value);
+    setEmail(result.email);
+    if (result.error) setErrorEmail("Not valid email");
+    else setErrorEmail("");
+  };
 
   const passwordChange = (event) => {
-    const passwordValidation=passwordAuth(event.target.value);
-    const confirmPasswordValidation=confirmPasswordAuth(confirmPassword);
+    const passwordValidation = passwordAuth(event.target.value);
+    const confirmPasswordValidation = confirmPasswordAuth(confirmPassword);
     setErrorPassword(passwordValidation.error);
     setPassword(passwordValidation.password);
     setErrorCPassword(confirmPasswordValidation.error);
@@ -71,49 +86,39 @@ const SignUp = () => {
     }
   };
   const confirmPasswordChange = (event) => {
-    const confirmPasswordValidation=confirmPasswordAuth(password, event.target.value);
+    const confirmPasswordValidation = confirmPasswordAuth(
+      password,
+      event.target.value
+    );
     setErrorCPassword(confirmPasswordValidation.error);
     setConfirmPassword(confirmPasswordValidation.confirmPassword);
   };
 
-  const handleSubmit =  async(e) => {
-    setisLocked(true);
-    setisGlobalLocked(true);
-    e.preventDefault();
-    const user = {username: username, email: email, password: CryptoJS.SHA512(password).toString()
-    };
-    const url = radioName === "Seller" ? "api/seller/signup" : "api/buyer/signup";
-    const response = await fetch(url, {
-      method: "POST",
-      body: JSON.stringify(user),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      return setError(json.error);
-    } else {
-      window.location.href="/profile";
-    }
-  };
   
-  const handleGoogle = async(e) =>{
-      e.preventDefault();
-      setisGlobalLocked(true)
-      await fetch("api/signup/google",{
-        method:"GET",
-        state:(radioName==='Seller'?'seller':'buyer')
-      })
-  .then((result)=>{
-    console.log(result);
-    window.location.href=result.url;
-  })
+  const handleSubmit =async (e) =>{
+    e.preventDefault();
+    await signup(radioName==='Seller'?'seller':'buyer',username,email,password);
+  }
+
+  const signin = async (userType,username,email,googleId,imageURL,verified) =>{
+    await axios.post('/api/google/signup',{userType:userType,username:username,email:email,googleId:googleId,imageURL:imageURL,verified:verified})
+    .then((result)=>{
+      dispatch(LOGIN({_id:result.data._id,userType:result.data.userType,token:result.data.token,verified:true}));
+      localStorage.setItem('user',JSON.stringify({_id:result.data._id,email:result.data.email,userType:result.data.userType,token:result.data.token,verified:true}));
+    })
+    .catch((err)=>{
+      console.log(err.response.data.error);
+    })
+  }
+
+  async function handleCallBackResponse(response){
+    const res= jwt_decode(response.credential);
+    signin(radioName==='Seller'?'seller':'buyer',res.name,res.email,res.sub,res.picture,res.verified);
   }
 
   return (
-    <Container style={{ marginTop: "12%", width: "33%" }}>
-      <Card className="mt-5 float-end" style={{ maxWidth: "100%" }}>
+    <div className="signup-container" style={{ marginTop: "10%" }}>
+      <Card className="w-75" style={{ maxWidth: "100%" }}>
         <Card.Body>
           <Card.Title style={{ textAlign: "center" }}>SignUp</Card.Title>
           <Card.Text>
@@ -123,11 +128,9 @@ const SignUp = () => {
               </Form.Group>
               <Form.Group
                 controlId="UserType"
-                style={{
-                  marginLeft: "33%",
-                }}
               >
-                <ButtonGroup>
+                <div className="d-flex justify-content-center w-100" >
+                <ButtonGroup className="singUp-button ">
                   {radios.map((radio, idx) => (
                     <ToggleButton
                       key={idx}
@@ -143,53 +146,56 @@ const SignUp = () => {
                     </ToggleButton>
                   ))}
                 </ButtonGroup>
+                </div>
+                
               </Form.Group>
-              <InputGroup className="mt-3 mb-3" size="sm">
+
+                <Form.Group controlId="Username" className="w-100">
+                <InputGroup className="mt-3 mb-3" size="sm">
                 <InputGroup.Text>
                   <Person color="#3354a9" />
                 </InputGroup.Text>
-                <Form.Group controlId="Username">
                   <Form.Control
                     type="text"
                     required
                     placeholder="Username"
                     className="float-end"
-                    style={{ paddingLeft: "75px", paddingRight: "75px" }}
                     value={username}
                     onChange={(e)=>setUsername(userNameAuth(e.target.value))}
                   />
-                </Form.Group>
               </InputGroup>
+                </Form.Group>
               <Form.Group controlId="errorMessageEmail">
                 <p style={{ color: "red" }}>{errorEmail}</p>
               </Form.Group>
-              <InputGroup className="mt-3 mb-3" size="sm">
+
+                <Form.Group controlId="Email" className="w-100">
+                <InputGroup className="mt-3 mb-3" size="sm">
                 <InputGroup.Text>
                   <Envelope color="#3354a9" />
                 </InputGroup.Text>
-                <Form.Group controlId="Email">
                   <Form.Control
                     type="email"
                     required
                     placeholder="Email"
                     className="float-end"
-                    style={{ paddingLeft: "75px", paddingRight: "75px" }}
                     value={email}
                     onChange={emailChange}
                   />
-                </Form.Group>
               </InputGroup>
+                </Form.Group>
               <Form.Group
                 controlId="errorPassword"
                 style={{ overflowWrap: "anywhere" }}
               >
                 <p style={{ color: "red" }}>{errorPassword}</p>
               </Form.Group>
-              <InputGroup className="mt-3 mb-3" size="sm">
+
+                <Form.Group controlId="Password" className="w-100">
+                <InputGroup className="mt-3 mb-3" size="sm">
                 <InputGroup.Text>
                   <Lock color="#3354a9" />
                 </InputGroup.Text>
-                <Form.Group controlId="Password">
                   <Form.Control
                     type={passwordVisibility?"text":"password"}
                     placeholder="Password"
@@ -197,9 +203,7 @@ const SignUp = () => {
                     className="float-end"
                     onChange={passwordChange}
                     value={password}
-                    style={{ paddingLeft: "65px", paddingRight: "65px" }}
                   />
-                </Form.Group>
                 <InputGroup.Text>
                   {(passwordVisibility && (
                     <EyeFill color="#3354a9" onClick={()=>setPasswordVisibility(false)} />
@@ -209,14 +213,15 @@ const SignUp = () => {
                     ))}
                 </InputGroup.Text>
               </InputGroup>
-              <Form.Group controlId="errorConfirmPassword">
+                </Form.Group>
+              <Form.Group controlId="errorConfirmPassword" className="w-100">
                 <p style={{ color: "red" }}>{errorConfirmPassword}</p>
               </Form.Group>
+                <Form.Group controlId="ConfirmPassword">
               <InputGroup className="mt-3 mb-3" size="sm">
                 <InputGroup.Text>
                   <Lock color="#3354a9" />
                 </InputGroup.Text>
-                <Form.Group controlId="ConfirmPassword">
                   <Form.Control
                     type={confirmPasswordVisibility?"text":"password"}
                     placeholder="Confirm Password"
@@ -224,9 +229,7 @@ const SignUp = () => {
                     className="float-end"
                     value={confirmPassword}
                     onChange={confirmPasswordChange}
-                    style={{ paddingLeft: "65px", paddingRight: "65px" }}
                   />
-                </Form.Group>
                 <InputGroup.Text>
                   {(confirmPasswordVisibility && (
                     <EyeFill color="#3354a9" onClick={()=>setConfirmPasswordVisibility(false)} />
@@ -236,37 +239,26 @@ const SignUp = () => {
                     ))}
                 </InputGroup.Text>
               </InputGroup>
-              <Button
+                </Form.Group>
+                <div className="d-flex justify-content-center">
+              <Button className="btn btn-login align-content-center"
                 type="submit"
-                variant="outline-primary"
-                size="sm"
-                style={{
-                  marginLeft: "40%",
-                }}
-                disabled={isLocked || isGlobalLocked}
+                size="md"
+                disabled={isLoading}
               >
                 SignUp
               </Button>
+              </div>
               <hr />
-              <Form.Group controlId="LoginWithGoogle">
-                <Button
-                  variant="outline-primary"
-                  size="lg"
-                  style={{ marginLeft: "30%" }}
-                >
-                  <FaGoogle onClick={(e)=>handleGoogle(e)} disabled={isGlobalLocked}/>
-                </Button>
-                <Button variant="outline-primary" size="lg" className="mx-5">
-                  <FaFacebook disabled={isGlobalLocked}/>
-                </Button>
+              <Form.Group controlId="LoginWithGoogle" className="d-flex justify-content-around">
+                <div id="googleSignIn" className="google"></div>
               </Form.Group>
             </Form>
-            <div className="existingAccount landingText">
+            <div className="existingAccount landingText" style={{ textAlign: "center"  }}>
               Already have an account?
               <Link
                 to="/"
-                style={{ color: "#3354a9" }}
-                onClick={() => dispatch(setLogin())}
+                style={{ color: "#3354a9", textAlign: "center"  }}
               >
                 LOG IN!
               </Link>
@@ -274,7 +266,7 @@ const SignUp = () => {
           </Card.Text>
         </Card.Body>
       </Card>
-    </Container>
+    </div>
   );
 };
 
