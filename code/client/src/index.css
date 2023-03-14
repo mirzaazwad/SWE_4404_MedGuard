@@ -1,5 +1,5 @@
 :root {
-  --customMagenta: #3354a9;
+  --customMagenta: #EB006F;
   --customDarkBlue: #103686;
   --customBlue: #3354a9;
   --white: #fff;
@@ -11,6 +11,14 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.otp {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+  align-items: center;
 }
 
 code {
@@ -41,6 +49,14 @@ code {
   --bs-btn-hover-bg: var(--customMagenta)!important;
   --bs-btn-hover-border-color : var(--customMagenta)!important;
 }
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20%;
+  --bs-btn-hover-bg: var(--customMagenta)!important;
+  --bs-btn-hover-border-color : var(--customMagenta)!important;
+}
 .btn-save{
   --bs-btn-bg: var(--customBlue) !important;
   color: white !important;
@@ -58,6 +74,18 @@ code {
 
 
 .btn-editProfile i {
+  margin-left: 5px;
+  vertical-align: middle;
+}
+.btn-add{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100% !important;
+  --bs-btn-hover-bg: var(--customMagenta)!important;
+  --bs-btn-hover-border-color : var(--customMagenta)!important;
+}
+.btn-add i {
   margin-left: 5px;
   vertical-align: middle;
 }
@@ -86,7 +114,33 @@ code {
   font-size: 1.3rem;
   text-decoration:double;
 }
+.edit-profile-picture {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: none;
+  width: 100%;
+  height: 25%;
+  color: white !important;
+}
+.btn-primary{
+  --bs-btn-bg: var(--customBlue) !important;
+  color: white !important;
+  height: 20%;
+  /* width: 25%; */
+  --bs-btn-hover-bg: var(--customMagenta)!important;
+  --bs-btn-hover-border-color : var(--customMagenta)!important;
 
+}
+.btn-login{
+  --bs-btn-bg: var(--customBlue) !important;
+  color: white !important;
+  height: 100%;
+  width: 35%;
+  --bs-btn-hover-bg: var(--customMagenta)!important;
+  --bs-btn-hover-border-color : var(--customMagenta)!important;
+
+}
 .landingText{
   margin-top: 13px;
   margin-bottom: 13px;
@@ -115,7 +169,7 @@ code {
 }
 
 .btn-outline-primary:hover{
-  background-color: #3354a9 !important;
+  background-color: var(--white) !important;
   color: #fff !important;
 }
 
@@ -219,6 +273,40 @@ code {
   outline: none;
 }
 
+/* .landing-signup-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 10%;
+  height: 100%;
+  flex-basis: 50%;
+} */
+.login{
+  width: 50%;
+  vertical-align: baseline;
+}
+.login-container
+{
+  flex-basis: 50%;
+  width: 100%;
+  vertical-align: baseline;
+}
+.landing-image-container {
+  flex-basis: 50%;
+  width: 100%;
+  height: 100%;
+  margin-right: 15%;
+}
+.singUp-button{
+  height: 25%;
+}
+.signup-container {
+  flex: 1;
+  flex-basis: 50%;
+  width: 100%;
+  display: block;
+
+}
 .myRightCtn{
   position:relative;
   background:#fff;
@@ -236,8 +324,55 @@ code {
   width: 16px;
   height: 16px;
 }
+.changePasswordCard{
+  width: 40%;
+  margin-top: 12%;
+}
+.forgotPasswordCard{
+  width: 40%;
+  margin-top: 12%;
+}
+.addMedicineCard{
+  width: 60%;
+  margin-top: 7%;
+  display: fit-content;
+}
+@media (max-width: 768px){
+  .addMedicineCard{
+    width: 80%;
+    margin-top: 15%;
+  }
+  .addMedicineSide{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.1%;
 
-@media only screen and (max-width: 767px) {
+  }
+  .inventory-section{
+    margin-top: 14% !important;
+    margin-left: 30%;
+  }
+
+}
+.addMedicineCardHeader{
+  background-color: var(--customBlue) !important;
+  color: var(--white) !important;
+  text-align: center;
+}
+.addMedicineCardTitle{
+  font-size: medium;
+  margin-left: 2%;
+  margin-top: 2% !important;
+  font-style: normal;
+}
+.required-field::after{
+  content: "*";
+  color: red !important;
+}
+.inventory-section{
+  margin-top: 6%;
+}
+/* @media only screen and (max-width: 767px) {
   .login-container {
     width: 100%;
     max-width: none;
@@ -248,4 +383,51 @@ code {
   .container-3 {
     width: 100%;
   }
+} */
+thead {
+  background-color: var(--customBlue);
+  color: #fff;
+}
+
+th, td {
+  text-align: center;
+}
+.plusButton{
+    --bs-btn-color: #fff;
+    --bs-btn-bg: transparent!important;
+    --bs-btn-border-color:transparent!important;
+    --bs-btn-hover-color: transparent!important;
+    --bs-btn-hover-bg: transparent!important;
+    --bs-btn-hover-border-color: transparent!important;
+    --bs-btn-focus-shadow-rgb: 130,138,145;
+    --bs-btn-active-color: transparent!important;
+    --bs-btn-active-bg: transparent!important;
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: transparent;
+}
+.minusButton{
+  --bs-btn-color: #fff;
+    --bs-btn-bg: transparent!important;
+    --bs-btn-border-color:transparent!important;
+    --bs-btn-hover-color: transparent!important;
+    --bs-btn-hover-bg: transparent!important;
+    --bs-btn-hover-border-color: transparent!important;
+    --bs-btn-focus-shadow-rgb: 130,138,145;
+    --bs-btn-active-color: transparent!important;
+    --bs-btn-active-bg: transparent!important;
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: transparent;
+}
+.plusIcon{
+  color :var(--customBlue);
+}
+.minusIcon{
+  background-color: transparent;
+  color:var(--customMagenta)
 }
